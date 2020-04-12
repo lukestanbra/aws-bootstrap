@@ -5,6 +5,10 @@ Parameters:
     Type: String
   EC2AMI:
     Type: String
+  Domain:
+    Type: String
+  Subdomain:
+    Type: String
 
 Resources:
 
@@ -122,6 +126,16 @@ Resources:
     Properties:
       InternetGatewayId: !Ref InternetGateway
       VpcId: !Ref VPC
+
+  DNS:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Sub '${Domain}.'
+      Name: !Sub '${Subdomain}.${Domain}.'
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt LoadBalancer.DNSName
 
   ## ROUTING
 
@@ -331,7 +345,7 @@ Outputs:
 
   LBEndpoint:
     Description: The DNS name for the LB
-    Value: !Sub "http://${LoadBalancer.DNSName}:80"
+    Value: !Sub "http://${DNS}"
 
   ScalingGroup:
     Description: The ScalingGroup for this stage
